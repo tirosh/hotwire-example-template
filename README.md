@@ -204,3 +204,24 @@ The `app/views/applicants/_form.html.erb` view partial:
 ```
 
 https://user-images.githubusercontent.com/2575027/152659554-c69dd665-f96c-4a91-a7f2-e39e7d9a7e07.mov
+
+## Removing fields
+
+```diff
+--- a/app/views/applicants/_form.html.erb
++++ b/app/views/applicants/_form.html.erb
+             <%= reference_form.label :email_address %>
+             <%= reference_form.email_field :email_address %>
++
++            <%= reference_form.button :_destroy, value: true,
++                                                 formaction: reference_form.object.applicant.persisted? ?
++                                                   edit_applicant_path(reference_form.object.applicant) :
++                                                   new_applicant_path,
++                                                 formmethod: "get" do %>
++              Destroy
++            <% end %>
+           </div>
+         </li>
+```
+
+https://user-images.githubusercontent.com/2575027/152659594-e3c00c6a-d9d6-46d3-a460-fba1b9777d06.mov
