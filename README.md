@@ -164,3 +164,130 @@ Our view partials:
 
 <img  src="https://images.thoughtbot.com/blog-vellum-image-uploads/c1xKD3NsQvsT36Tf4GFv_nested-attributes-edit.png"
       alt="A form to edit an Applicant and their personal references">
+
+## Adding fields
+
+```diff
+--- a/app/views/applicants/_form.html.erb
++++ b/app/views/applicants/_form.html.erb
+   </ol>
+
+   <button type="button">
+     Add personal reference
++
++    <%= form.fields :references_attributes, model: form.object.references.new,
++                                            index: form.object.references.size do |reference_form| %>
++      <template>
++        <turbo-stream action="append" target="<%= form.field_id(:references_attributes) %>">
++          <template>
++            <%= render partial: "references/form", object: reference_form %>
++          </template>
++        </turbo-stream>
++      </template>
++    <% end %>
+   </button>
+ </fieldset>
+```
+
+```diff
+--- a/app/views/applicants/_form.html.erb
++++ b/app/views/applicants/_form.html.erb
+ <fieldset>
+   <legend>Personal references</legend>
+
+-  <ol>
++  <ol id="<%= form.field_id(:references_attributes) %>">
+```
+
+```diff
+--- a/app/views/applicants/_form.html.erb
++++ b/app/views/applicants/_form.html.erb
+   </ol>
+
+-  <button type="button">
++  <button type="button" data-controller="clone" data-action="click->clone#append">
+     Add personal reference
+
+     <%= form.fields :references_attributes, model: form.object.references.new,
+                                             index: form.object.references.size do |reference_form| %>
+-      <template>
++      <template data-clone-target="template">
+         <turbo-stream action="append" target="<%= form.field_id(:references_attributes) %>">
+           <template>
+             <%= render partial: "references/form", object: reference_form %>
+           </template>
+         </turbo-stream>
+       </template>
+     <% end %>
+   </button>
+ </fieldset>
+```
+
+```javascript
+// app/javascript/controllers/clone_controller.js
+
+import { Controller } from "@hotwired/stimulus"
+
+export default class extends Controller {
+  static targets = [ "template" ]
+
+  append() {
+    for (const target of this.templateTargets) {
+      const { content } = target
+
+      this.element.append(content.cloneNode(true))
+    }
+  }
+}
+```
+
+```diff
+--- a/app/views/applicants/_form.html.erb
++++ b/app/views/applicants/_form.html.erb
+   </ol>
+
+-  <button type="button" data-controller="clone" data-action="click->clone#append">
++  <button type="button" data-controller="clone template-parts" data-action="click->clone#append"
++                        data-template-parts-key-value="id"
++                        data-template-parts-index-value="<%= form.object.references.size %>">
+     Add personal reference
+
+     <%= form.fields :references_attributes, model: form.object.references.new,
+-                                            index: form.object.references.size do |reference_form| %>
++                                            index: "{{id}}" do |reference_form| %>
+       <template data-clone-target="template">
+         <turbo-stream action="append" target="<%= form.field_id(:references_attributes) %>">
+-          <template>
++          <template data-template-parts-target="template">
+             <%= render partial: "references/form", object: reference_form %>
+           </template>
+         </turbo-stream>
+       </template>
+     <% end %>
+   </button>
+ </fieldset>
+```
+
+```javascript
+// app/javascript/controllers/template_parts_controller.js
+
+import { Controller } from "@hotwired/stimulus"
+import { TemplateInstance } from "https://cdn.skypack.dev/@github/template-parts"
+
+export default class extends Controller {
+  static targets = [ "template" ]
+  static values = { index: Number, key: String }
+
+  templateTargetConnected(target) {
+    const templateInstance = new TemplateInstance(target, {
+      [this.keyValue]: this.indexValue
+    })
+
+    target.content.replaceChildren(templateInstance)
+
+    this.indexValue++
+  }
+}
+```
+
+https://user-images.githubusercontent.com/2575027/152659893-fe4b4b49-4828-485d-8db3-6a08a2914814.mov
