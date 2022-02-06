@@ -105,4 +105,22 @@ class ApplicantsTest < ApplicationSystemTestCase
     assert_button "Destroy", count: 1
     assert_no_field "Email address", with: "enemy@example.com"
   end
+
+  test "form is keyboard navigable" do
+    visit new_applicant_path
+    fill_in "Name", fieldset: "Applicant", with: "Bob"
+    click_on "Add personal reference"
+    send_keys(:tab).then { send_keys "Enemy" }
+    send_keys(:tab).then { send_keys "enemy@example.com" }
+    send_keys(:tab).then { send_keys :enter }.then { assert_no_button "Destroy" }
+    send_keys(:tab).then { send_keys :enter }
+    send_keys(:tab).then { send_keys "Friend" }
+    send_keys(:tab).then { send_keys "friend@example.com" }
+    send_keys(:enter)
+
+    within :section, "Bob" do
+      assert_text "Friend", count: 1
+      assert_text "friend@example.com", count: 1
+    end
+  end
 end
