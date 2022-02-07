@@ -10,5 +10,6 @@ class InvitationCodesTest < ApplicationSystemTestCase
     send_keys :meta, "v"
 
     assert_field "Paste", with: code
+    assert_no_selector :field, "Copied to clipboard"
   end
 end

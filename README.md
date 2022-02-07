@@ -137,3 +137,50 @@ export default class extends Controller {
 ```
 
 https://user-images.githubusercontent.com/2575027/152819896-9e5cfabb-0d1c-4151-ade4-01d7c0e97d26.mov
+
+## Removing the flash
+
+```diff
+--- a/app/views/application/_alert.html.erb
++++ b/app/views/application/_alert.html.erb
+-<div role="alert" class="m-4 p-4 border border-solid rounded-md">
++<div role="alert" class="m-4 p-4 border border-solid rounded-md"
++     data-controller="remove" data-remove-delay-value="2000">
+   <%= yield %>
+ </div>
+```
+
+```javascript
+// app/javascript/controller/remove_controller.js
+
+import { Controller } from "@hotwired/stimulus"
+
+export default class extends Controller {
+  static values = { delay: Number }
+
+  connect() {
+    this.timeoutID = setTimeout(() => this.element.remove(), this.delayValue)
+  }
+
+  disconnect() {
+    clearTimeout(this.timeoutID)
+  }
+}
+```
+
+https://user-images.githubusercontent.com/2575027/152820139-e3c63b34-8ce3-4e51-bacf-9a2ab93abc4c.mov
+
+## Wrapping up
+
+Included:
+
+* an entirely client-side interaction augmented by server-generated HTML
+* declaratively encoded DOM operations through `<template>` and `<turbo-stream>`
+  elements
+* three general purpose controllers with potential for re-use
+
+Excluded:
+
+* parallel alert implementations
+* transforming JSON into HTML
+* `XMLHttpRequest`, `fetch`
