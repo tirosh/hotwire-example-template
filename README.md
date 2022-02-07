@@ -76,3 +76,64 @@ export default class extends Controller {
 ```
 
 https://user-images.githubusercontent.com/2575027/152818126-821a4e64-8318-44a0-bbd5-0d1aa3e132fc.mov
+
+## Presenting a server-rendered flash
+
+```diff
+--- a/app/views/invitation_codes/show.html.erb
++++ b/app/views/invitation_codes/show.html.erb
++<output id="alerts" class="absolute bottom-0 right-0 w-96"></output>
++
+ <section>
+   <h1>Invitations</h1>
+```
+
+```diff
+--- a/app/views/invitation_codes/show.html.erb
++++ b/app/views/invitation_codes/show.html.erb
+   <fieldset>
+     <input id="invitation_code" class="block" value="<%= @invitation_code %>" readonly>
+
+     <button type="button" value="<%= @invitation_code %>"
+-            data-controller="clipboard"
+-            data-action="click->clipboard#copy">
++            data-controller="clipboard clone"
++            data-action="click->clipboard#copy click->clone#append">
+       Copy to clipboard
++
++      <template data-clone-target="template">
++        <%= turbo_stream.append "alerts" do %>
++          <%= render "alert" do %>
++            Copied to clipboard
++          <% end %>
++        <% end %>
++      </template>
+     </button>
+   </fieldset>
+```
+
+```erb
+<%# app/views/application/_alert.html.erb %>
+
+<div role="alert" class="m-4 p-4 border border-solid rounded-md">
+  <%= yield %>
+</div>
+```
+
+```javascript
+// app/javascript/controllers/clone_controller.js
+
+import { Controller } from "@hotwired/stimulus"
+
+export default class extends Controller {
+  static targets = [ "template" ]
+
+  append() {
+    for (const { content } of this.templateTargets) {
+      this.element.append(content.cloneNode(true))
+    }
+  }
+}
+```
+
+https://user-images.githubusercontent.com/2575027/152819896-9e5cfabb-0d1c-4151-ade4-01d7c0e97d26.mov

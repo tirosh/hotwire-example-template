@@ -5,7 +5,7 @@ class InvitationCodesTest < ApplicationSystemTestCase
     code = "secret"
 
     visit invitation_code_path(id: code)
-    click_on "Copy to clipboard"
+    click_on("Copy to clipboard").then { assert_selector :alert, "Copied to clipboard" }
     find(:field, "Paste").click
     send_keys :meta, "v"
 
