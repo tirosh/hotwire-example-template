@@ -1,0 +1,19 @@
+<section>
+  <h1>Invitations</h1>
+
+  <fieldset>
+    <label for="invitation_code" class="block">Invitation Code</label>
+    <input id="invitation_code" class="block" value="<%= @invitation_code %>" readonly>
+
+    <button type="button" value="<%= @invitation_code %>"
+            data-controller="clipboard"
+            data-action="click->clipboard#copy">
+      Copy to clipboard
+    </button>
+  </fieldset>
+
+  <fieldset>
+    <label for="paste">Paste</label>
+    <input id="paste">
+  </fieldset>
+</section>
